@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Collège Les Princes - École Fun</title>
+<style>
+body { margin:0; font-family:'Comic Sans MS', sans-serif; background:#f0f8ff; color:#333; }
+header { text-align:center; background:#6c63ff; color:white; padding:15px 0; font-size:1.5em; text-shadow:2px 2px black; }
+.container { max-width:400px; margin:100px auto; padding:20px; background:white; border-radius:15px; box-shadow:0 4px 15px rgba(0,0,0,0.2); }
+h2 { text-align:center; color:#6c63ff; }
+input { width:100%; padding:10px; margin:8px 0; border-radius:10px; border:1px solid #ccc; font-size:1em; }
+button { width:100%; padding:10px; margin-top:10px; border:none; border-radius:10px; background:#ff6584; color:white; font-size:1em; cursor:pointer; }
+button:hover { background:#ff4466; }
+.switch-form { text-align:center; margin-top:10px; font-size:0.9em; }
+.switch-form span { color:#6c63ff; cursor:pointer; text-decoration:underline; }
+.notification { display:none; text-align:center; margin-top:10px; padding:10px; border-radius:10px; }
+.notification.success { background:#90ee90; color:#333; }
+.notification.error { background:#ff7f7f; color:#fff; }
+
+/* TikTok-style */
+body.tiktok-style { background:#000; color:white; }
+header.tiktok-style { background:#6c63ff; }
+.post { position:relative; height:100vh; width:100%; display:flex; justify-content:center; align-items:center; flex-direction:column; overflow:hidden; }
+.post img, .post video { max-width:90%; max-height:70%; border-radius:15px; }
+.caption { position:absolute; bottom:100px; left:20px; font-size:1.3em; font-weight:bold; text-shadow:2px 2px 5px black; }
+.actions { position:absolute; right:20px; bottom:120px; display:flex; flex-direction:column; gap:15px; text-align:center; }
+.actions button { background:#ff6584; border:none; color:white; padding:10px; border-radius:50%; font-size:1.3em; cursor:pointer; width:55px; height:55px; }
+.actions button:hover { background:#ff4466; }
+.like-count { margin-top:5px; font-weight:bold; font-size:0.9em; }
+.educational-game { position:absolute; bottom:200px; left:20px; background:white; padding:10px; border-radius:10px; color:#333; font-weight:bold; }
+.educational-game button { margin-top:5px; padding:5px 10px; background:#6c63ff; color:white; border:none; border-radius:8px; cursor:pointer; }
+.educational-game button:hover { background:#5145ff; }
+.post-box { position:fixed; bottom:10px; left:50%; transform:translateX(-50%); background:white; padding:10px; border-radius:15px; width:90%; max-width:400px; z-index:10; }
+.post-box textarea { width:100%; padding:5px; border-radius:10px; border:1px solid #ccc; resize:none; font-size:1em; }
+.post-box input[type="file"] { margin-top:5px; width:100%; }
+.post-box button { margin-top:5px; padding:8px 15px; border:none; border-radius:10px; background:#ff6584; color:white; cursor:pointer; }
+.post-box button:hover { background:#ff4466; }
+#notification { position:fixed; top:20px; right:20px; background:#fffa65; color:#333; padding:10px 15px; border-radius:10px; display:none; font-weight:bold; z-index:20; }
+</style>
+</head>
+<body>
+
+<!-- Inscription -->
+<div class="container" id="signup-container">
+<h2>Inscription</h2>
+<input type="text" id="prenom" placeholder="Prénom">
+<input type="text" id="nom" placeholder="Nom">
+<input type="email" id="email" placeholder="Email">
+<input type="password" id="password" placeholder="Mot de passe">
+<button onclick="signup()">S'inscrire</button>
+<div class="switch-form">Déjà inscrit ? <span onclick="showLogin()">Se connecter</span></div>
+<div class="notification" id="signup-notif"></div>
+</div>
+
+<!-- Connexion -->
+<div class="container" id="login-container" style="display:none;">
+<h2>Connexion</h2>
+<input type="email" id="login-email" placeholder="Email">
+<input type="password" id="login-password" placeholder="Mot de passe">
+<button onclick="login()">Se connecter</button>
+<div class="switch-form">Pas encore inscrit ? <span onclick="showSignup()">S'inscrire</span></div>
+<div class="notification" id="login-notif"></div>
+</div>
+
+<script>
+// Simuler base de données
+let users = [];
+let currentUser = null;
+
+function showLogin(){ document.getElementById('signup-container').style.display='none'; document.getElementById('login-container').style.display='block'; }
+function showSignup(){ document.getElementById('signup-container').style.display='block'; document.getElementById('login-container').style.display='none'; }
+
+function signup(){
+    const prenom=document.getElementById('prenom').value.trim();
+    const nom=document.getElementById('nom').value.trim();
+    const email=document.getElementById('email').value.trim();
+    const password=document.getElementById('password').value.trim();
+    const notif=document.getElementById('signup-notif');
+
+    if(!prenom || !nom || !email || !password){ notif.textContent="Veuillez remplir tous les champs."; notif.className="notification error"; notif.style.display="block"; return; }
+    if(users.some(u=>u.email===email)){ notif.textContent="Email déjà utilisé."; notif.className="notification error"; notif.style.display="block"; return; }
+
+    users.push({prenom,nom,email,password,premium:false});
+    notif.textContent="Inscription réussie ! Redirection vers connexion...";
+    notif.className="notification success"; notif.style.display="block";
+    setTimeout(showLogin,1500);
+}
+
+function login(){
+    const email=document.getElementById('login-email').value.trim();
+    const password=document.getElementById('login-password').value.trim();
+    const notif=document.getElementById('login-notif');
+    const user=users.find(u=>u.email===email && u.password===password);
+    if(user){
+        currentUser=user;
+        notif.textContent="Connexion réussie ! Redirection...";
+        notif.className="notification success"; notif.style.display="block";
+        setTimeout(loadTikTokStyle,1000);
+    } else {
+        notif.textContent="Email ou mot de passe incorrect.";
+        notif.className="notification error"; notif.style.display="block";
+    }
+}
+
+function loadTikTokStyle(){
+    if(!currentUser){ alert("Vous devez être connecté !"); location.reload(); return; }
+
+    document.body.innerHTML="";
+    document.body.classList.add('tiktok-style');
+    document.body.innerHTML=`
+<header class="tiktok-style">Bienvenue au Collège Les Princes, ${currentUser.prenom} ! 🎉</header>
+<div class="mode-switch">
+<button onclick="setMode('normal')">Mode Normal</button>
+<button onclick="setMode('premium')">Mode Premium (Payant)</button>
+</div>
+<div class="post-box">
+<textarea rows="2" placeholder="Écris quelque chose..."></textarea>
+<input type="file" id="mediaInput" accept="image/*,video/*">
+<button onclick="addPost()">Publier</button>
+</div>
+<div class="gallery-container" id="gallery"></div>
+<div id="notification">Nouveau post ajouté ! 🎉</div>`;
+    addInitialPost();
+}
+
+// Post initial
+function addInitialPost(){
+    const gallery=document.getElementById('gallery');
+    const post=document.createElement('div'); post.className='post';
+    post.innerHTML=`
+<img src="https://i.imgur.com/4AiXzf8.jpg">
+<div class="caption">Bienvenue au Collège Les Princes ! Découvrez notre école interactive !</div>
+<div class="actions">
+<button onclick="likePost(this)">❤️</button>
+<div class="like-count">5</div>
+<button>💬</button>
+<button>🔗</button>
+</div>
+<div class="educational-game">
+<p>Jeu éducatif du Collège Les Princes : 2 + 3 = ?</p>
+<button onclick="alert('Bravo ! 🎉')">5</button>
+<button onclick="alert('Essaie encore ❌')">4</button>
+</div>`;
+    gallery.appendChild(post);
+}
+
+// Mode Premium payant
+function setMode(mode){
+    if(mode==='premium'){
+        if(!currentUser){ alert("Connectez-vous pour accéder au Premium !"); return; }
+        if(confirm("Le Mode Premium coûte 3000 F/mois. Voulez-vous payer maintenant ?")){
+            const method=prompt("Choisissez : 1-Wave, 2-Orange Money, 3-Moov Money");
+            let link="";
+            if(method=="1") link="https://payment.wave.com/3000";
+            else if(method=="2") link="https://payment.orange.com/3000";
+            else if(method=="3") link="https://payment.moov.com/3000";
+            else { alert("Méthode invalide"); return; }
+            window.location.href = link;
+        }
+    } else { alert("Mode Normal activé !"); }
+}
+
+// Ajouter post
+function addPost(){
+    const textarea=document.querySelector('.post-box textarea');
+    const inputFile=document.getElementById('mediaInput');
+    const gallery=document.getElementById('gallery');
+    const content=textarea.value;
+    const file=inputFile.files[0];
+
+    const post=document.createElement('div'); post.className='post';
+
+    if(file){
+        const reader=new FileReader();
+        reader.onload=function(e){
+            if(file.type.startsWith('image')){ const img=document.createElement('img'); img.src=e.target.result; post.appendChild(img); }
+            else if(file.type.startsWith('video')){ const video=document.createElement('video'); video.src=e.target.result; video.controls=true; video.autoplay=true; post.appendChild(video); }
+            addCaptionAndActions(post,content);
+            gallery.prepend(post); notifyAllUsers(currentUser.prenom + " a publié un nouveau post ! 🎉");
+        }
+        reader.readAsDataURL(file);
+    } else { addCaptionAndActions(post,content); gallery.prepend(post); notifyAllUsers(currentUser.prenom + " a publié un nouveau post ! 🎉"); }
+
+    textarea.value=''; inputFile.value='';
+}
+
+function addCaptionAndActions(post,content){
+    if(content){ const caption=document.createElement('div'); caption.className='caption'; caption.textContent=content; post.appendChild(caption); }
+    const actions=document.createElement('div'); actions.className='actions';
+    const likeBtn=document.createElement('button'); likeBtn.textContent='❤️'; likeBtn.onclick=function(){likePost(likeBtn);};
+    const likeCount=document.createElement('div'); likeCount.className='like-count'; likeCount.textContent='0';
+    actions.appendChild(likeBtn); actions.appendChild(likeCount);
+    const commentBtn=document.createElement('button'); commentBtn.textContent='💬';
+    const shareBtn=document.createElement('button'); shareBtn.textContent='🔗';
+    actions.appendChild(commentBtn); actions.appendChild(shareBtn);
+    post.appendChild(actions);
+    const eduGame=document.createElement('div'); eduGame.className='educational-game';
+    eduGame.innerHTML=`<p>Jeu éducatif : 3 + 4 = ?</p>
+    <button onclick="alert('Bravo ! 🎉')">7</button>
+    <button onclick="alert('Essaie encore ❌')">8</button>`;
+    post.appendChild(eduGame);
+}
+
+// Notifications
+function notifyAllUsers(message){
+    const notif=document.getElementById('notification');
+    notif.textContent=message;
+    notif.style.display='block';
+    setTimeout(()=>{ notif.style.display='none'; },3000);
+}
+
+function likePost(btn){ const countDiv=btn.nextElementSibling; let count=parseInt(countDiv.textContent); count++; countDiv.textContent=count; }
+</script>
+
+</body>
+</html>
